@@ -35,6 +35,9 @@ type MoneyRecord struct {
 
 func AddMoneyRecord(mr MoneyRecord) (id int64, err error) {
 	o := orm.NewOrm()
+	mr.CreateDateTime = time.Now().UTC().Add(8 * time.Hour)
+	mr.UpdateDateTime = time.Now().UTC().Add(8 * time.Hour)
+	mr.RecordDateTime = time.Now().UTC().Add(8 * time.Hour)
 	return o.Insert(&mr)
 }
 
@@ -53,8 +56,8 @@ func GetAllMoneyRecord(pageIndex int, pageSize int) (list []*MoneyRecord, err er
 }
 
 func UpdateMoneyRecord(id int64, mr *MoneyRecord) (num int64, err error) {
-	println(id)
 	o := orm.NewOrm()
+	mr.UpdateDateTime = time.Now().UTC().Add(8 * time.Hour)
 	return o.Update(mr)
 }
 
@@ -63,6 +66,7 @@ func DeleteMoneyRecord(id int64) (num int64, err error) {
 	record := MoneyRecord{Id: id}
 	if o.Read(&record) == nil {
 		record.DeleteFlag = true
+		record.UpdateDateTime = time.Now().UTC().Add(8 * time.Hour)
 		if num, err := o.Update(&record); err == nil {
 			return num, nil
 		}
