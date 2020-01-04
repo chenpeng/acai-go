@@ -25,6 +25,11 @@ func init() {
 				&controllers.NasController{},
 			),
 		),
+		beego.NSNamespace("/classification",
+			beego.NSInclude(
+				&controllers.ClassificationController{},
+			),
+		),
 	)
 	beego.AddNamespace(ns)
 }
