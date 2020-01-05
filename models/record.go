@@ -17,7 +17,7 @@ func init() {
 
 type MoneyRecord struct {
 	Id                 int64
-	ClassificationId   int64
+	ClassificationCode int32
 	ClassificationName string
 	Money              float64
 	Type               int32
