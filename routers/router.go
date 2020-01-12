@@ -20,11 +20,6 @@ func init() {
 				&controllers.MoneyRecordController{},
 			),
 		),
-		beego.NSNamespace("/nas",
-			beego.NSInclude(
-				&controllers.NasController{},
-			),
-		),
 		beego.NSNamespace("/classification",
 			beego.NSInclude(
 				&controllers.ClassificationController{},

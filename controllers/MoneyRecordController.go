@@ -4,6 +4,9 @@ import (
 	"acai-go/models"
 	"encoding/json"
 	uuid "github.com/satori/go.uuid"
+	"io"
+	"net/http"
+	"os"
 	"path"
 	"strconv"
 
@@ -120,7 +123,7 @@ func (mrc *MoneyRecordController) Delete() {
 // @Success 200 {int}
 // @Failure 403 body is empty
 // @router /upload [post]
-func (mrc *NasController) Upload() {
+func (mrc *MoneyRecordController) Upload() {
 	_, info, _ := mrc.GetFile("file")
 	fileSuffix := path.Ext(path.Base(info.Filename))
 	uuid, _ := uuid.NewV1()
@@ -135,4 +138,35 @@ func (mrc *NasController) Upload() {
 		mrc.Data["json"] = result
 	}
 	mrc.ServeJSON()
+}
+
+// @Title Download
+// @Description Download files
+// @Param	picUrl		query 	string	true		"The key for picUrl"
+// @Success 200 {int}
+// @Failure 403 body is empty
+// @router /download [get]
+func (mrc *MoneyRecordController) Download() {
+	picUrl := mrc.Ctx.Input.Query("picUrl")
+	w := mrc.Ctx.ResponseWriter
+	//打开文件
+	file, err := os.Open(path.Join(beego.AppConfig.String("filepath"), picUrl))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = io.WriteString(w, "Bad request")
+		return
+	}
+	//结束后关闭文件
+	defer file.Close()
+
+	//设置响应的header头
+	w.Header().Add("Content-type", "application/octet-stream")
+	w.Header().Add("content-disposition", "attachment; filename=\""+picUrl+"\"")
+	//将文件写至responseBody
+	_, err = io.Copy(w, file)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = io.WriteString(w, "Bad request")
+		return
+	}
 }

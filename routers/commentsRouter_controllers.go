@@ -61,7 +61,7 @@ func init() {
 			Filters:          nil,
 			Params:           nil})
 
-	beego.GlobalControllerRouter["acai-go/controllers:NasController"] = append(beego.GlobalControllerRouter["acai-go/controllers:NasController"],
+	beego.GlobalControllerRouter["acai-go/controllers:MoneyRecordController"] = append(beego.GlobalControllerRouter["acai-go/controllers:MoneyRecordController"],
 		beego.ControllerComments{
 			Method:           "Download",
 			Router:           `/download`,
@@ -70,7 +70,7 @@ func init() {
 			Filters:          nil,
 			Params:           nil})
 
-	beego.GlobalControllerRouter["acai-go/controllers:NasController"] = append(beego.GlobalControllerRouter["acai-go/controllers:NasController"],
+	beego.GlobalControllerRouter["acai-go/controllers:MoneyRecordController"] = append(beego.GlobalControllerRouter["acai-go/controllers:MoneyRecordController"],
 		beego.ControllerComments{
 			Method:           "Upload",
 			Router:           `/upload`,
