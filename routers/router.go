@@ -25,6 +25,16 @@ func init() {
 				&controllers.ClassificationController{},
 			),
 		),
+		beego.NSNamespace("/user",
+			beego.NSInclude(
+				&controllers.UserController{},
+			),
+		),
+		beego.NSNamespace("/oauth",
+			beego.NSInclude(
+				&controllers.OauthController{},
+			),
+		),
 	)
 	beego.AddNamespace(ns)
 }
