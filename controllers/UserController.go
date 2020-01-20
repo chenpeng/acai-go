@@ -14,7 +14,7 @@ type UserController struct {
 // @Success 200 {int} models.User.Id
 // @Failure 403 body is empty
 // @router /signIn [post]
-func (mrc *UserController) signIn() {
+func (mrc *UserController) SignIn() {
 
 }
 
@@ -24,7 +24,7 @@ func (mrc *UserController) signIn() {
 // @Success 200 {int} models.User.Id
 // @Failure 403 body is empty
 // @router /signOut [post]
-func (mrc *UserController) signOut() {
+func (mrc *UserController) SignOut() {
 
 }
 
@@ -34,6 +34,6 @@ func (mrc *UserController) signOut() {
 // @Success 200 {int} models.User.Id
 // @Failure 403 body is empty
 // @router /signUp [post]
-func (mrc *UserController) signUp() {
+func (mrc *UserController) SignUp() {
 
 }
