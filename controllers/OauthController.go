@@ -10,6 +10,6 @@ type OauthController struct {
 // @Description get publicKey
 // @Success 200 {object} models.User
 // @router /publicKey [get]
-func (mrc *OauthController) publicKey() {
+func (mrc *OauthController) PublicKey() {
 
 }
