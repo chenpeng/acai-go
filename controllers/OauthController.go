@@ -5,11 +5,14 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"fmt"
 	"github.com/astaxie/beego"
+	"io"
+	"strings"
 )
 
 type OauthController struct {
@@ -42,6 +45,8 @@ func (mrc *OauthController) PublicKey() {
 
 var privateKey *rsa.PrivateKey
 var publicKey *rsa.PublicKey
+var privateKeyPem string
+var publicKeyPem string
 
 func GenRsaKey(size int) (pkp string, err error) {
 	// 生成私钥文件
@@ -55,10 +60,10 @@ func GenRsaKey(size int) (pkp string, err error) {
 	privateKeyB := x509.MarshalPKCS1PrivateKey(privateKey)
 	//privateKeyStr = base64.StdEncoding.EncodeToString(privateKeyB)
 	priBlock := &pem.Block{
-		Type:  "RSA PRIVATE KEY",
+		Type:  "PRIVATE KEY",
 		Bytes: privateKeyB,
 	}
-	privateKeyPem := string(pem.EncodeToMemory(priBlock))
+	privateKeyPem = string(pem.EncodeToMemory(priBlock))
 	fmt.Printf("=======私钥文件内容=========%v", privateKeyPem)
 	// 生成公钥文件
 	publicKey = &privateKey.PublicKey
@@ -71,7 +76,7 @@ func GenRsaKey(size int) (pkp string, err error) {
 		Type:  "PUBLIC KEY",
 		Bytes: publicKeyB,
 	}
-	publicKeyPem := string(pem.EncodeToMemory(publicBlock))
+	publicKeyPem = string(pem.EncodeToMemory(publicBlock))
 	fmt.Printf("=======公钥文件内容=========%v", publicKeyPem)
 	if err != nil {
 		errors.New("出问题啦")
@@ -118,24 +123,77 @@ func (mrc *OauthController) Login() {
 	mrc.ServeJSON()
 }
 
-// @Title 登录
+var random io.Reader
+
+// @Title 加密
 // @Description post login
 // @Param	body		body 	models.User	true		"body for user content"
 // @Success 200
-// @router /jiami [post]
-func (mrc *OauthController) Jiami() {
+// @router /encrypt [post]
+func (mrc *OauthController) Encrypt() {
 	var inputDto models.InputDto
 	json.Unmarshal(mrc.Ctx.Input.RequestBody, &inputDto)
 	text := inputDto.Text
-	//random := rand.Reader
+	random = rand.Reader
 	//bb,err := rsa.EncryptPKCS1v15(random, publicKey, []byte(text))
 	//aa,err := rsa.DecryptPKCS1v15(random, privateKey, bb)
-	aa, err := rsa.DecryptPKCS1v15(nil, privateKey, []byte(text))
+	aa, err := rsa.EncryptPKCS1v15(random, publicKey, []byte(text))
+	if err != nil {
+		result := models.Result{Code: 1, Data: nil, Message: "加密失败"}
+		mrc.Data["json"] = result
+	} else {
+		str := base64.StdEncoding.EncodeToString(aa)
+		result := models.Result{Code: 0, Data: str, Message: "加密成功"}
+		mrc.Data["json"] = result
+	}
+	mrc.ServeJSON()
+}
+
+// @Title 解密
+// @Description post login
+// @Param	body		body 	models.User	true		"body for user content"
+// @Success 200
+// @router /decrypt [post]
+func (mrc *OauthController) Decrypt() {
+	var inputDto models.InputDto
+	json.Unmarshal(mrc.Ctx.Input.RequestBody, &inputDto)
+	text := inputDto.Text
+	random := inputDto.Random
+	qq, err := base64.StdEncoding.DecodeString(text)
+	ab := strings.NewReader(random)
+	aa, err := rsa.DecryptPKCS1v15(ab, privateKey, qq)
 	if err != nil {
 		result := models.Result{Code: 1, Data: nil, Message: "获取失败"}
 		mrc.Data["json"] = result
 	} else {
 		str := string(aa)
+		result := models.Result{Code: 0, Data: str, Message: "获取成功"}
+		mrc.Data["json"] = result
+	}
+	mrc.ServeJSON()
+}
+
+// @Title 测试
+// @Description post login
+// @Param	body		body 	models.User	true		"body for user content"
+// @Success 200
+// @router /ceshi [post]
+func (mrc *OauthController) Ceshi() {
+	var inputDto models.InputDto
+	json.Unmarshal(mrc.Ctx.Input.RequestBody, &inputDto)
+	text := inputDto.Text
+	random := inputDto.Random
+	ab := strings.NewReader(random)
+	bb, err := rsa.EncryptPKCS1v15(ab, publicKey, []byte(text))
+	cc := base64.StdEncoding.EncodeToString(bb)
+	dd, err := base64.StdEncoding.DecodeString(cc)
+	aa, err := rsa.DecryptPKCS1v15(ab, privateKey, dd)
+	if err != nil {
+		result := models.Result{Code: 1, Data: nil, Message: "获取失败"}
+		mrc.Data["json"] = result
+	} else {
+		str := string(aa)
+		//str := base64.StdEncoding.EncodeToString(aa)
 		result := models.Result{Code: 0, Data: str, Message: "获取成功"}
 		mrc.Data["json"] = result
 	}
