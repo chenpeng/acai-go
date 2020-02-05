@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"acai-go/cache"
 	"acai-go/models"
 	"crypto/rand"
 	"crypto/rsa"
@@ -9,7 +10,6 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"errors"
-	"fmt"
 	"github.com/astaxie/beego"
 	"io"
 	"strings"
@@ -19,23 +19,22 @@ type OauthController struct {
 	beego.Controller
 }
 
-var publicKeyStr = ""
-
 // @Title 下发公钥
 // @Description get publicKey
 // @Success 200
 // @router /publicKey [get]
 func (mrc *OauthController) PublicKey() {
-	if publicKeyStr != "" {
-		result := models.Result{Code: 0, Data: publicKeyStr, Message: "获取成功"}
+	publicKey := cache.GetPublicKey()
+	if publicKey != "" {
+		result := models.Result{Code: 0, Data: publicKey, Message: "获取成功"}
 		mrc.Data["json"] = result
 	} else {
-		publicKeyS, err := GenRsaKey(1024)
+		publicKeyStr, err := GenRsaKey(1024)
 		if err != nil {
 			result := models.Result{Code: 1, Data: nil, Message: "获取失败"}
 			mrc.Data["json"] = result
 		} else {
-			publicKeyStr = publicKeyS
+			cache.SetPublicKey(publicKeyStr)
 			result := models.Result{Code: 0, Data: publicKeyStr, Message: "获取成功"}
 			mrc.Data["json"] = result
 		}
@@ -52,7 +51,10 @@ func GenRsaKey(size int) (pkp string, err error) {
 	// 生成私钥文件
 	privateKey, err = rsa.GenerateKey(rand.Reader, size)
 	if err != nil {
-		errors.New("出问题啦")
+		errors.New("GenerateKey err")
+	}
+	if privateKey == nil {
+		errors.New("privateKey is nil")
 	}
 	if bits := privateKey.N.BitLen(); bits != size {
 		errors.New("key too short")
@@ -64,7 +66,6 @@ func GenRsaKey(size int) (pkp string, err error) {
 		Bytes: privateKeyB,
 	}
 	privateKeyPem = string(pem.EncodeToMemory(priBlock))
-	fmt.Printf("=======私钥文件内容=========%v", privateKeyPem)
 	// 生成公钥文件
 	publicKey = &privateKey.PublicKey
 	publicKeyB, err := x509.MarshalPKIXPublicKey(publicKey)
@@ -77,47 +78,37 @@ func GenRsaKey(size int) (pkp string, err error) {
 		Bytes: publicKeyB,
 	}
 	publicKeyPem = string(pem.EncodeToMemory(publicBlock))
-	fmt.Printf("=======公钥文件内容=========%v", publicKeyPem)
 	if err != nil {
 		errors.New("出问题啦")
 	}
 	return publicKeyPem, err
 }
 
-// 加密
-func RsaEncrypt(origData []byte) ([]byte, error) {
-	return rsa.EncryptPKCS1v15(rand.Reader, publicKey, origData)
-}
-
-// 解密
-func RsaDecrypt(ciphertext []byte) ([]byte, error) {
-	//block, _ := pem.Decode(privateKeyB)
-	//if block == nil {
-	//	return nil, errors.New("private key error!")
-	//}
-	//priv, err := x509.ParsePKCS1PrivateKey(block.Bytes)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//return rsa.DecryptPKCS1v15(rand.Reader, privateKey, ciphertext)
-	return rsa.DecryptPKCS1v15(nil, privateKey, ciphertext)
-}
-
 // @Title 登录
 // @Description post login
-// @Param	body		body 	models.User	true		"body for user content"
+// @Param	body		body 	models.InputDto	true		"body for InputDto content"
 // @Success 200
-// @router /login [post]
-func (mrc *OauthController) Login() {
+// @router /signIn [post]
+func (mrc *OauthController) signIn() {
 	var inputDto models.InputDto
 	json.Unmarshal(mrc.Ctx.Input.RequestBody, &inputDto)
-	textB, err := RsaDecrypt([]byte(inputDto.Text))
-	fmt.Printf(string(textB))
+	text := inputDto.Text
+	random := inputDto.Random
+	qq, err := base64.StdEncoding.DecodeString(text)
+	ab := strings.NewReader(random)
+	aa, err := rsa.DecryptPKCS1v15(ab, privateKey, qq)
 	if err != nil {
-		result := models.Result{Code: 1, Data: nil, Message: "获取失败"}
+		result := models.Result{Code: 1, Data: nil, Message: "登录失败"}
 		mrc.Data["json"] = result
 	} else {
-		result := models.Result{Code: 0, Data: string(textB), Message: "获取成功"}
+		str := string(aa)
+		arr := strings.Split(str, ";")
+		username := arr[0]
+		password := arr[1]
+		println(username)
+		println(password)
+		// todo 校验用户名和密码
+		result := models.Result{Code: 0, Data: str, Message: "登录成功"}
 		mrc.Data["json"] = result
 	}
 	mrc.ServeJSON()
