@@ -11,6 +11,8 @@ import (
 	"encoding/pem"
 	"errors"
 	"github.com/astaxie/beego"
+	uuid "github.com/satori/go.uuid"
+	"golang.org/x/crypto/bcrypt"
 	"io"
 	"strings"
 )
@@ -84,12 +86,53 @@ func GenRsaKey(size int) (pkp string, err error) {
 	return publicKeyPem, err
 }
 
+// @Title 注册
+// @Description post login
+// @Param	body		body 	models.InputDto	true		"body for InputDto content"
+// @Success 200
+// @router /signUp [post]
+func (mrc *OauthController) SignUp() {
+	var inputDto models.InputDto
+	json.Unmarshal(mrc.Ctx.Input.RequestBody, &inputDto)
+	text := inputDto.Text
+	random := inputDto.Random
+	qq, err := base64.StdEncoding.DecodeString(text)
+	ab := strings.NewReader(random)
+	aa, err := rsa.DecryptPKCS1v15(ab, privateKey, qq)
+	if err != nil {
+		result := models.Result{Code: 1, Data: nil, Message: "注册失败"}
+		mrc.Data["json"] = result
+	} else {
+		str := string(aa)
+		arr := strings.Split(str, ";")
+		username := arr[0]
+		password := arr[1]
+		hash, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		//err = bcrypt.CompareHashAndPassword([]byte(encodePW), []byte(passwordOK))
+		user := models.User{
+			Username:   username,
+			Password:   string(hash),
+			State:      0,
+			DeleteFlag: false,
+		}
+		num, err := models.AddUser(user)
+		if err != nil || num <= 0 {
+			result := models.Result{Code: 1, Data: nil, Message: "注册失败"}
+			mrc.Data["json"] = result
+		} else {
+			result := models.Result{Code: 0, Data: nil, Message: "注册成功"}
+			mrc.Data["json"] = result
+		}
+	}
+	mrc.ServeJSON()
+}
+
 // @Title 登录
 // @Description post login
 // @Param	body		body 	models.InputDto	true		"body for InputDto content"
 // @Success 200
 // @router /signIn [post]
-func (mrc *OauthController) signIn() {
+func (mrc *OauthController) SignIn() {
 	var inputDto models.InputDto
 	json.Unmarshal(mrc.Ctx.Input.RequestBody, &inputDto)
 	text := inputDto.Text
@@ -105,10 +148,15 @@ func (mrc *OauthController) signIn() {
 		arr := strings.Split(str, ";")
 		username := arr[0]
 		password := arr[1]
-		println(username)
-		println(password)
-		// todo 校验用户名和密码
-		result := models.Result{Code: 0, Data: str, Message: "登录成功"}
+		user, err := models.FindByUsername(username)
+		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+		if err != nil {
+			result := models.Result{Code: 1, Data: nil, Message: "登录失败"}
+			mrc.Data["json"] = result
+		}
+		uuid, _ := uuid.NewV1()
+		cache.SetAccessToken(uuid.String(), user)
+		result := models.Result{Code: 0, Data: uuid.String(), Message: "登录成功"}
 		mrc.Data["json"] = result
 	}
 	mrc.ServeJSON()
