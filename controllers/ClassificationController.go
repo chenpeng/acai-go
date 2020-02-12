@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"acai-go/constant"
+	"acai-go/dto"
 	"acai-go/models"
 	"strconv"
 
@@ -21,10 +23,10 @@ func (mrc *ClassificationController) GetAll() {
 	classificationType, _ := strconv.Atoi(typeStr)
 	classificationList, err := models.GetAllClassification(classificationType)
 	if err != nil {
-		result := models.Result{Code: 1, Data: nil, Message: "查询失败"}
+		result := dto.Result{Code: constant.ERROR, Data: nil, Message: "查询失败"}
 		mrc.Data["json"] = result
 	} else {
-		result := models.Result{Code: 0, Data: classificationList, Message: "查询成功"}
+		result := dto.Result{Code: constant.SUCCESS, Data: classificationList, Message: "查询成功"}
 		mrc.Data["json"] = result
 	}
 	mrc.ServeJSON()
