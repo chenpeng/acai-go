@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"acai-go/dto"
 	"acai-go/models"
+	"acai-go/util"
 	"encoding/json"
 	uuid "github.com/satori/go.uuid"
 	"io"
@@ -27,12 +29,17 @@ type MoneyRecordController struct {
 func (mrc *MoneyRecordController) Post() {
 	var moneyRecord models.MoneyRecord
 	json.Unmarshal(mrc.Ctx.Input.RequestBody, &moneyRecord)
+	user := util.GetUser(mrc.Ctx)
+	moneyRecord.CreateUserId = user.Id
+	moneyRecord.UpdateUserId = user.Id
+	moneyRecord.CreateUserName = user.Nickname
+	moneyRecord.UpdateUserName = user.Nickname
 	row, err := models.AddMoneyRecord(moneyRecord)
 	if err != nil {
-		result := models.Result{Code: 1, Data: nil, Message: "新增失败"}
+		result := dto.Result{Code: 1, Data: nil, Message: "新增失败"}
 		mrc.Data["json"] = result
 	} else {
-		result := models.Result{Code: 0, Data: row, Message: "新增成功"}
+		result := dto.Result{Code: 0, Data: row, Message: "新增成功"}
 		mrc.Data["json"] = result
 	}
 	mrc.ServeJSON()
@@ -47,12 +54,14 @@ func (mrc *MoneyRecordController) GetAll() {
 	pageSizeStr := mrc.Ctx.Input.Query("pageSize")
 	pageIndex, _ := strconv.Atoi(pageIndexStr)
 	pageSize, _ := strconv.Atoi(pageSizeStr)
-	moneyRecordList, err := models.GetAllMoneyRecord(pageIndex, pageSize)
+	user := util.GetUser(mrc.Ctx)
+	userId := user.Id
+	moneyRecordList, err := models.GetAllMoneyRecord(pageIndex, pageSize, userId)
 	if err != nil {
-		result := models.Result{Code: 1, Data: nil, Message: "查询失败"}
+		result := dto.Result{Code: 1, Data: nil, Message: "查询失败"}
 		mrc.Data["json"] = result
 	} else {
-		result := models.Result{Code: 0, Data: moneyRecordList, Message: "查询成功"}
+		result := dto.Result{Code: 0, Data: moneyRecordList, Message: "查询成功"}
 		mrc.Data["json"] = result
 	}
 	mrc.ServeJSON()
@@ -68,10 +77,10 @@ func (mrc *MoneyRecordController) Get() {
 	id, _ := mrc.GetInt64(":id")
 	moneyRecord, err := models.GetMoneyRecord(id)
 	if err != nil {
-		result := models.Result{Code: 1, Data: nil, Message: "查询失败"}
+		result := dto.Result{Code: 1, Data: nil, Message: "查询失败"}
 		mrc.Data["json"] = result
 	} else {
-		result := models.Result{Code: 0, Data: moneyRecord, Message: "查询成功"}
+		result := dto.Result{Code: 0, Data: moneyRecord, Message: "查询成功"}
 		mrc.Data["json"] = result
 	}
 	mrc.ServeJSON()
@@ -88,12 +97,15 @@ func (mrc *MoneyRecordController) Put() {
 	id, _ := mrc.GetInt64(":id")
 	var moneyRecord models.MoneyRecord
 	json.Unmarshal(mrc.Ctx.Input.RequestBody, &moneyRecord)
+	user := util.GetUser(mrc.Ctx)
+	moneyRecord.UpdateUserId = user.Id
+	moneyRecord.UpdateUserName = user.Nickname
 	hehe, err := models.UpdateMoneyRecord(id, &moneyRecord)
 	if err != nil {
-		result := models.Result{Code: 1, Data: nil, Message: "更新失败"}
+		result := dto.Result{Code: 1, Data: nil, Message: "更新失败"}
 		mrc.Data["json"] = result
 	} else {
-		result := models.Result{Code: 0, Data: hehe, Message: "更新成功"}
+		result := dto.Result{Code: 0, Data: hehe, Message: "更新成功"}
 		mrc.Data["json"] = result
 	}
 	mrc.ServeJSON()
@@ -109,10 +121,10 @@ func (mrc *MoneyRecordController) Delete() {
 	id, _ := mrc.GetInt64(":id")
 	row, err := models.DeleteMoneyRecord(id)
 	if err != nil {
-		result := models.Result{Code: 1, Data: nil, Message: "删除失败"}
+		result := dto.Result{Code: 1, Data: nil, Message: "删除失败"}
 		mrc.Data["json"] = result
 	} else {
-		result := models.Result{Code: 0, Data: row, Message: "删除成功"}
+		result := dto.Result{Code: 0, Data: row, Message: "删除成功"}
 		mrc.Data["json"] = result
 	}
 	mrc.ServeJSON()
@@ -131,10 +143,10 @@ func (mrc *MoneyRecordController) Upload() {
 
 	err := mrc.SaveToFile("file", path.Join(beego.AppConfig.String("filepath"), fileName))
 	if err != nil {
-		result := models.Result{Code: 1, Data: nil, Message: "上传失败"}
+		result := dto.Result{Code: 1, Data: nil, Message: "上传失败"}
 		mrc.Data["json"] = result
 	} else {
-		result := models.Result{Code: 0, Data: fileName, Message: "上传成功"}
+		result := dto.Result{Code: 0, Data: fileName, Message: "上传成功"}
 		mrc.Data["json"] = result
 	}
 	mrc.ServeJSON()
