@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"acai-go/cache"
+	"acai-go/dto"
 	"acai-go/models"
 	"crypto/rand"
 	"crypto/rsa"
@@ -28,16 +29,16 @@ type OauthController struct {
 func (mrc *OauthController) PublicKey() {
 	publicKey := cache.GetPublicKey()
 	if publicKey != "" {
-		result := models.Result{Code: 0, Data: publicKey, Message: "获取成功"}
+		result := dto.Result{Code: 0, Data: publicKey, Message: "获取成功"}
 		mrc.Data["json"] = result
 	} else {
 		publicKeyStr, err := GenRsaKey(1024)
 		if err != nil {
-			result := models.Result{Code: 1, Data: nil, Message: "获取失败"}
+			result := dto.Result{Code: 1, Data: nil, Message: "获取失败"}
 			mrc.Data["json"] = result
 		} else {
 			cache.SetPublicKey(publicKeyStr)
-			result := models.Result{Code: 0, Data: publicKeyStr, Message: "获取成功"}
+			result := dto.Result{Code: 0, Data: publicKeyStr, Message: "获取成功"}
 			mrc.Data["json"] = result
 		}
 	}
@@ -92,7 +93,7 @@ func GenRsaKey(size int) (pkp string, err error) {
 // @Success 200
 // @router /signUp [post]
 func (mrc *OauthController) SignUp() {
-	var inputDto models.InputDto
+	var inputDto dto.InputDto
 	json.Unmarshal(mrc.Ctx.Input.RequestBody, &inputDto)
 	text := inputDto.Text
 	random := inputDto.Random
@@ -100,27 +101,28 @@ func (mrc *OauthController) SignUp() {
 	ab := strings.NewReader(random)
 	aa, err := rsa.DecryptPKCS1v15(ab, privateKey, qq)
 	if err != nil {
-		result := models.Result{Code: 1, Data: nil, Message: "注册失败"}
+		result := dto.Result{Code: 1, Data: nil, Message: "注册失败"}
 		mrc.Data["json"] = result
 	} else {
 		str := string(aa)
 		arr := strings.Split(str, ";")
 		username := arr[0]
-		password := arr[1]
+		nickname := arr[1]
+		password := arr[2]
 		hash, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-		//err = bcrypt.CompareHashAndPassword([]byte(encodePW), []byte(passwordOK))
 		user := models.User{
 			Username:   username,
+			Nickname:   nickname,
 			Password:   string(hash),
 			State:      0,
 			DeleteFlag: false,
 		}
 		num, err := models.AddUser(user)
 		if err != nil || num <= 0 {
-			result := models.Result{Code: 1, Data: nil, Message: "注册失败"}
+			result := dto.Result{Code: 1, Data: nil, Message: "注册失败"}
 			mrc.Data["json"] = result
 		} else {
-			result := models.Result{Code: 0, Data: nil, Message: "注册成功"}
+			result := dto.Result{Code: 0, Data: nil, Message: "注册成功"}
 			mrc.Data["json"] = result
 		}
 	}
@@ -133,7 +135,7 @@ func (mrc *OauthController) SignUp() {
 // @Success 200
 // @router /signIn [post]
 func (mrc *OauthController) SignIn() {
-	var inputDto models.InputDto
+	var inputDto dto.InputDto
 	json.Unmarshal(mrc.Ctx.Input.RequestBody, &inputDto)
 	text := inputDto.Text
 	random := inputDto.Random
@@ -141,7 +143,7 @@ func (mrc *OauthController) SignIn() {
 	ab := strings.NewReader(random)
 	aa, err := rsa.DecryptPKCS1v15(ab, privateKey, qq)
 	if err != nil {
-		result := models.Result{Code: 1, Data: nil, Message: "登录失败"}
+		result := dto.Result{Code: 1, Data: nil, Message: "登录失败"}
 		mrc.Data["json"] = result
 	} else {
 		str := string(aa)
@@ -151,13 +153,14 @@ func (mrc *OauthController) SignIn() {
 		user, err := models.FindByUsername(username)
 		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 		if err != nil {
-			result := models.Result{Code: 1, Data: nil, Message: "登录失败"}
+			result := dto.Result{Code: 1, Data: nil, Message: "账号或密码错误"}
+			mrc.Data["json"] = result
+		} else {
+			uuid, _ := uuid.NewV1()
+			cache.SetAccessToken(uuid.String(), user)
+			result := dto.Result{Code: 0, Data: uuid.String(), Message: "登录成功"}
 			mrc.Data["json"] = result
 		}
-		uuid, _ := uuid.NewV1()
-		cache.SetAccessToken(uuid.String(), user)
-		result := models.Result{Code: 0, Data: uuid.String(), Message: "登录成功"}
-		mrc.Data["json"] = result
 	}
 	mrc.ServeJSON()
 }
@@ -170,7 +173,7 @@ var random io.Reader
 // @Success 200
 // @router /encrypt [post]
 func (mrc *OauthController) Encrypt() {
-	var inputDto models.InputDto
+	var inputDto dto.InputDto
 	json.Unmarshal(mrc.Ctx.Input.RequestBody, &inputDto)
 	text := inputDto.Text
 	random = rand.Reader
@@ -178,11 +181,11 @@ func (mrc *OauthController) Encrypt() {
 	//aa,err := rsa.DecryptPKCS1v15(random, privateKey, bb)
 	aa, err := rsa.EncryptPKCS1v15(random, publicKey, []byte(text))
 	if err != nil {
-		result := models.Result{Code: 1, Data: nil, Message: "加密失败"}
+		result := dto.Result{Code: 1, Data: nil, Message: "加密失败"}
 		mrc.Data["json"] = result
 	} else {
 		str := base64.StdEncoding.EncodeToString(aa)
-		result := models.Result{Code: 0, Data: str, Message: "加密成功"}
+		result := dto.Result{Code: 0, Data: str, Message: "加密成功"}
 		mrc.Data["json"] = result
 	}
 	mrc.ServeJSON()
@@ -194,7 +197,7 @@ func (mrc *OauthController) Encrypt() {
 // @Success 200
 // @router /decrypt [post]
 func (mrc *OauthController) Decrypt() {
-	var inputDto models.InputDto
+	var inputDto dto.InputDto
 	json.Unmarshal(mrc.Ctx.Input.RequestBody, &inputDto)
 	text := inputDto.Text
 	random := inputDto.Random
@@ -202,11 +205,11 @@ func (mrc *OauthController) Decrypt() {
 	ab := strings.NewReader(random)
 	aa, err := rsa.DecryptPKCS1v15(ab, privateKey, qq)
 	if err != nil {
-		result := models.Result{Code: 1, Data: nil, Message: "获取失败"}
+		result := dto.Result{Code: 1, Data: nil, Message: "获取失败"}
 		mrc.Data["json"] = result
 	} else {
 		str := string(aa)
-		result := models.Result{Code: 0, Data: str, Message: "获取成功"}
+		result := dto.Result{Code: 0, Data: str, Message: "获取成功"}
 		mrc.Data["json"] = result
 	}
 	mrc.ServeJSON()
@@ -218,7 +221,7 @@ func (mrc *OauthController) Decrypt() {
 // @Success 200
 // @router /ceshi [post]
 func (mrc *OauthController) Ceshi() {
-	var inputDto models.InputDto
+	var inputDto dto.InputDto
 	json.Unmarshal(mrc.Ctx.Input.RequestBody, &inputDto)
 	text := inputDto.Text
 	random := inputDto.Random
@@ -228,12 +231,12 @@ func (mrc *OauthController) Ceshi() {
 	dd, err := base64.StdEncoding.DecodeString(cc)
 	aa, err := rsa.DecryptPKCS1v15(ab, privateKey, dd)
 	if err != nil {
-		result := models.Result{Code: 1, Data: nil, Message: "获取失败"}
+		result := dto.Result{Code: 1, Data: nil, Message: "获取失败"}
 		mrc.Data["json"] = result
 	} else {
 		str := string(aa)
 		//str := base64.StdEncoding.EncodeToString(aa)
-		result := models.Result{Code: 0, Data: str, Message: "获取成功"}
+		result := dto.Result{Code: 0, Data: str, Message: "获取成功"}
 		mrc.Data["json"] = result
 	}
 	mrc.ServeJSON()
