@@ -98,6 +98,7 @@ func (mrc *MoneyRecordController) Put() {
 	var moneyRecord models.MoneyRecord
 	json.Unmarshal(mrc.Ctx.Input.RequestBody, &moneyRecord)
 	user := util.GetUser(mrc.Ctx)
+	moneyRecord.Id = id
 	moneyRecord.UpdateUserId = user.Id
 	moneyRecord.UpdateUserName = user.Nickname
 	hehe, err := models.UpdateMoneyRecord(id, &moneyRecord)
