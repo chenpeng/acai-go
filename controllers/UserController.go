@@ -8,32 +8,12 @@ type UserController struct {
 	beego.Controller
 }
 
-// @Title 登录
-// @Description 用户登录
+// @Title 修改
+// @Description 修改用户信息
 // @Param	body		body 	models.User	true		"body for user content"
 // @Success 200 {int} models.User.Id
 // @Failure 403 body is empty
-// @router /signIn [post]
-func (mrc *UserController) SignIn() {
-
-}
-
-// @Title 登出
-// @Description 用户登出，销毁token
-// @Param	body		body 	models.User	true		"body for user content"
-// @Success 200 {int} models.User.Id
-// @Failure 403 body is empty
-// @router /signOut [post]
-func (mrc *UserController) SignOut() {
-
-}
-
-// @Title 注册
-// @Description 用户注册账号
-// @Param	body		body 	models.User	true		"body for user content"
-// @Success 200 {int} models.User.Id
-// @Failure 403 body is empty
-// @router /signUp [post]
-func (mrc *UserController) SignUp() {
+// @router / [put]
+func (mrc *UserController) Put() {
 
 }
