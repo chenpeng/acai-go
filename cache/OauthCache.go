@@ -2,7 +2,7 @@ package cache
 
 import "acai-go/models"
 
-var oauthCache map[string]models.User
+var oauthCache = make(map[string]models.User)
 
 var publicKey = ""
 
