@@ -1,32 +1,25 @@
 package models
 
 import (
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql"
 
 	"time"
 )
 
-func init() {
-	orm.RegisterDriver("mysql", orm.DRMySQL)
-	orm.RegisterDataBase("default", "mysql", beego.AppConfig.String("datasource"))
-	orm.RegisterModel(new(Classification))
-}
-
 type Classification struct {
-	Id             int64
-	Code           int32
-	Name           string
-	Type           int32
-	Remark         string
-	DeleteFlag     bool
-	CreateUserId   int64
-	CreateUserName string
-	CreateDateTime time.Time
-	UpdateUserId   int64
-	UpdateUserName string
-	UpdateDateTime time.Time
+	Id             int64     `json:"id"`
+	Code           int32     `json:"code"`
+	Name           string    `json:"name"`
+	Type           int32     `json:"type"`
+	Remark         string    `json:"remark"`
+	DeleteFlag     bool      `json:"delete_flag"`
+	CreateUserId   int64     `json:"create_user_id"`
+	CreateUserName string    `json:"create_user_name"`
+	CreateDateTime time.Time `json:"create_date_time"`
+	UpdateUserId   int64     `json:"update_user_id"`
+	UpdateUserName string    `json:"update_user_name"`
+	UpdateDateTime time.Time `json:"update_date_time"`
 }
 
 func GetAllClassification(classificationType int) (list []*Classification, err error) {
