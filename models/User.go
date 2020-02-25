@@ -1,22 +1,16 @@
 package models
 
 import (
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 )
 
-func init() {
-	orm.RegisterDriver("mysql", orm.DRMySQL)
-	orm.RegisterDataBase("default", "mysql", beego.AppConfig.String("datasource"))
-	orm.RegisterModel(new(User))
-}
-
 type User struct {
-	Id         int64
-	Username   string
-	Password   string
-	State      int
-	DeleteFlag bool
+	Id         int64  `json:"id"`
+	Username   string `json:"username"`
+	Nickname   string `json:"nickname"`
+	Password   string `json:"password"`
+	State      int    `json:"state"`
+	DeleteFlag bool   `json:"delete_flag"`
 }
 
 func FindByUsername(username string) (User, error) {
