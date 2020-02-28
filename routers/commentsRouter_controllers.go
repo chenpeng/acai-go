@@ -7,6 +7,15 @@ import (
 
 func init() {
 
+	beego.GlobalControllerRouter["acai-go/controllers:ChartController"] = append(beego.GlobalControllerRouter["acai-go/controllers:ChartController"],
+		beego.ControllerComments{
+			Method:           "Get",
+			Router:           `/`,
+			AllowHTTPMethods: []string{"get"},
+			MethodParams:     param.Make(),
+			Filters:          nil,
+			Params:           nil})
+
 	beego.GlobalControllerRouter["acai-go/controllers:ClassificationController"] = append(beego.GlobalControllerRouter["acai-go/controllers:ClassificationController"],
 		beego.ControllerComments{
 			Method:           "GetAll",
@@ -75,6 +84,69 @@ func init() {
 			Method:           "Upload",
 			Router:           `/upload`,
 			AllowHTTPMethods: []string{"post"},
+			MethodParams:     param.Make(),
+			Filters:          nil,
+			Params:           nil})
+
+	beego.GlobalControllerRouter["acai-go/controllers:OauthController"] = append(beego.GlobalControllerRouter["acai-go/controllers:OauthController"],
+		beego.ControllerComments{
+			Method:           "Ceshi",
+			Router:           `/ceshi`,
+			AllowHTTPMethods: []string{"post"},
+			MethodParams:     param.Make(),
+			Filters:          nil,
+			Params:           nil})
+
+	beego.GlobalControllerRouter["acai-go/controllers:OauthController"] = append(beego.GlobalControllerRouter["acai-go/controllers:OauthController"],
+		beego.ControllerComments{
+			Method:           "Decrypt",
+			Router:           `/decrypt`,
+			AllowHTTPMethods: []string{"post"},
+			MethodParams:     param.Make(),
+			Filters:          nil,
+			Params:           nil})
+
+	beego.GlobalControllerRouter["acai-go/controllers:OauthController"] = append(beego.GlobalControllerRouter["acai-go/controllers:OauthController"],
+		beego.ControllerComments{
+			Method:           "Encrypt",
+			Router:           `/encrypt`,
+			AllowHTTPMethods: []string{"post"},
+			MethodParams:     param.Make(),
+			Filters:          nil,
+			Params:           nil})
+
+	beego.GlobalControllerRouter["acai-go/controllers:OauthController"] = append(beego.GlobalControllerRouter["acai-go/controllers:OauthController"],
+		beego.ControllerComments{
+			Method:           "PublicKey",
+			Router:           `/publicKey`,
+			AllowHTTPMethods: []string{"get"},
+			MethodParams:     param.Make(),
+			Filters:          nil,
+			Params:           nil})
+
+	beego.GlobalControllerRouter["acai-go/controllers:OauthController"] = append(beego.GlobalControllerRouter["acai-go/controllers:OauthController"],
+		beego.ControllerComments{
+			Method:           "SignIn",
+			Router:           `/signIn`,
+			AllowHTTPMethods: []string{"post"},
+			MethodParams:     param.Make(),
+			Filters:          nil,
+			Params:           nil})
+
+	beego.GlobalControllerRouter["acai-go/controllers:OauthController"] = append(beego.GlobalControllerRouter["acai-go/controllers:OauthController"],
+		beego.ControllerComments{
+			Method:           "SignUp",
+			Router:           `/signUp`,
+			AllowHTTPMethods: []string{"post"},
+			MethodParams:     param.Make(),
+			Filters:          nil,
+			Params:           nil})
+
+	beego.GlobalControllerRouter["acai-go/controllers:UserController"] = append(beego.GlobalControllerRouter["acai-go/controllers:UserController"],
+		beego.ControllerComments{
+			Method:           "Put",
+			Router:           `/`,
+			AllowHTTPMethods: []string{"put"},
 			MethodParams:     param.Make(),
 			Filters:          nil,
 			Params:           nil})
