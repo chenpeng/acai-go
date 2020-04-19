@@ -139,7 +139,7 @@ func (mrc *MoneyRecordController) Delete() {
 func (mrc *MoneyRecordController) Upload() {
 	_, info, _ := mrc.GetFile("file")
 	fileSuffix := path.Ext(path.Base(info.Filename))
-	uuid, _ := uuid.NewV1()
+	uuid := uuid.NewV1()
 	fileName := uuid.String() + fileSuffix
 
 	err := mrc.SaveToFile("file", path.Join(beego.AppConfig.String("filepath"), fileName))

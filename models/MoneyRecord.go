@@ -1,6 +1,7 @@
 package models
 
 import (
+	"acai-go/dto"
 	"errors"
 	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql"
@@ -43,7 +44,7 @@ func GetMoneyRecord(id int64) (mr *MoneyRecord, err error) {
 func GetAllMoneyRecord(pageIndex int, pageSize int, userId int64) (list []*MoneyRecord, err error) {
 	o := orm.NewOrm()
 	var mrList []*MoneyRecord
-	num, err := o.QueryTable("money_record").Filter("create_user_id", userId).Filter("delete_flag", false).OrderBy("-record_date_time").Limit(pageSize, (pageIndex-1)*pageSize).All(&mrList)
+	num, err := o.QueryTable("money_record").Filter("create_user_id", userId).Filter("delete_flag", false).OrderBy("-record_date_time", "-id").Limit(pageSize, (pageIndex-1)*pageSize).All(&mrList)
 	println(num)
 	return mrList, err
 }
@@ -65,4 +66,14 @@ func DeleteMoneyRecord(id int64) (num int64, err error) {
 		}
 	}
 	return 0, errors.New("没有查到要删除的数据")
+}
+
+func GetAllMoneyRecordChart(year int, month int, userId int64) (list []*dto.MoneyRecordChartDto, err error) {
+	o := orm.NewOrm()
+	var mrList []*dto.MoneyRecordChartDto
+	startDate := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.Local)
+	endDate := startDate.AddDate(0, 1, 0)
+	num, err := o.Raw("select DATE_FORMAT( record_date_time, '%Y-%m-%d' ) as date,sum(money) as money from money_record where record_date_time between ? and ? and create_user_id = ? group by date", startDate, endDate, userId).QueryRows(&mrList)
+	println(num)
+	return mrList, err
 }

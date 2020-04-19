@@ -35,6 +35,11 @@ func init() {
 				&controllers.OauthController{},
 			),
 		),
+		beego.NSNamespace("/chart",
+			beego.NSInclude(
+				&controllers.ChartController{},
+			),
+		),
 	)
 	beego.AddNamespace(ns)
 }

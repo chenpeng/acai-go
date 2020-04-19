@@ -156,7 +156,7 @@ func (mrc *OauthController) SignIn() {
 			result := dto.Result{Code: 1, Data: nil, Message: "账号或密码错误"}
 			mrc.Data["json"] = result
 		} else {
-			uuid, _ := uuid.NewV1()
+			uuid := uuid.NewV1()
 			cache.SetAccessToken(uuid.String(), user)
 			result := dto.Result{Code: 0, Data: uuid.String(), Message: "登录成功"}
 			mrc.Data["json"] = result
