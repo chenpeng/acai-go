@@ -73,7 +73,7 @@ func GetAllMoneyRecordChart(year int, month int, userId int64) (list []*dto.Mone
 	var mrList []*dto.MoneyRecordChartDto
 	startDate := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.Local)
 	endDate := startDate.AddDate(0, 1, 0)
-	num, err := o.Raw("select DATE_FORMAT( record_date_time, '%Y-%m-%d' ) as date,sum(money) as money from money_record where record_date_time between ? and ? and create_user_id = ? group by date", startDate, endDate, userId).QueryRows(&mrList)
+	num, err := o.Raw("select DATE_FORMAT( record_date_time, '%Y-%m-%d' ) as date,sum(money) as money from money_record where record_date_time between ? and ? and create_user_id = ? group by date order by date desc", startDate, endDate, userId).QueryRows(&mrList)
 	println(num)
 	return mrList, err
 }

@@ -35,7 +35,6 @@ var OauthFilter = func(ctx *context.Context) {
 			}
 		}
 	}
-	ctx.ResponseWriter.Header().Set("Access-Control-Allow-Origin", "*")
 }
 
 func contains(arr []string, str string) bool {
