@@ -1,8 +1,7 @@
 package dto
 
-import "time"
-
 type MoneyRecordChartDto struct {
-	Date  time.Time `json:"date"`
-	Money string    `json:"money"`
+	ClassificationCode int    `json:"classification_code"`
+	ClassificationName string `json:"classification_name"`
+	Money              string `json:"money"`
 }

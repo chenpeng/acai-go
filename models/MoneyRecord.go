@@ -16,7 +16,7 @@ type MoneyRecord struct {
 	Money              float64   `json:"money"`
 	Type               int32     `json:"type"`
 	Remark             string    `json:"remark"`
-	RecordDateTime     string    `json:"record_date_time"`
+	RecordDateTime     time.Time `json:"record_date_time"`
 	PicUrl             string    `json:"pic_url"`
 	DeleteFlag         bool      `json:"delete_flag"`
 	CreateUserId       int64     `json:"create_user_id"`
@@ -31,7 +31,6 @@ func AddMoneyRecord(mr MoneyRecord) (id int64, err error) {
 	o := orm.NewOrm()
 	mr.CreateDateTime = time.Now().UTC().Add(8 * time.Hour)
 	mr.UpdateDateTime = time.Now().UTC().Add(8 * time.Hour)
-	//mr.RecordDateTime = time.Now().UTC().Add(8 * time.Hour)
 	return o.Insert(&mr)
 }
 
@@ -41,10 +40,32 @@ func GetMoneyRecord(id int64) (mr *MoneyRecord, err error) {
 	return &record, o.Read(&record)
 }
 
-func GetAllMoneyRecord(pageIndex int, pageSize int, userId int64) (list []*MoneyRecord, err error) {
+func GetAllMoneyRecord(year int, month int, userId int64) (list []*MoneyRecord, err error) {
 	o := orm.NewOrm()
 	var mrList []*MoneyRecord
-	num, err := o.QueryTable("money_record").Filter("create_user_id", userId).Filter("delete_flag", false).OrderBy("-record_date_time", "-id").Limit(pageSize, (pageIndex-1)*pageSize).All(&mrList)
+	startDate := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.Local)
+	endDate := startDate.AddDate(0, 1, 0)
+	num, err := o.Raw(`select id,
+       classification_code,
+       classification_name,
+       money,
+       type,
+       remark,
+       DATE_FORMAT( record_date_time, '%Y-%m-%d' ) as record_date_time,
+       pic_url,
+       delete_flag,
+       create_user_id,
+       create_user_name,
+       create_date_time,
+       update_user_id,
+       update_user_name,
+       update_date_time
+from money_record
+where create_user_id = ?
+  and delete_flag = 0
+  and record_date_time >= ?
+  and record_date_time < ?
+order by record_date_time desc, id desc`, userId, startDate, endDate).QueryRows(&mrList)
 	println(num)
 	return mrList, err
 }
@@ -73,7 +94,13 @@ func GetAllMoneyRecordChart(year int, month int, userId int64) (list []*dto.Mone
 	var mrList []*dto.MoneyRecordChartDto
 	startDate := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.Local)
 	endDate := startDate.AddDate(0, 1, 0)
-	num, err := o.Raw("select DATE_FORMAT( record_date_time, '%Y-%m-%d' ) as date,sum(money) as money from money_record where record_date_time between ? and ? and create_user_id = ? group by date order by date desc", startDate, endDate, userId).QueryRows(&mrList)
+	num, err := o.Raw(`select classification_code, classification_name, sum(money) as money
+from money_record
+where record_date_time >= ?
+  and record_date_time < ?
+  and create_user_id = ?
+group by classification_code, classification_name
+order by money desc`, startDate, endDate, userId).QueryRows(&mrList)
 	println(num)
 	return mrList, err
 }

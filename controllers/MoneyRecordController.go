@@ -5,14 +5,13 @@ import (
 	"acai-go/models"
 	"acai-go/util"
 	"encoding/json"
+	"github.com/astaxie/beego"
 	uuid "github.com/satori/go.uuid"
 	"io"
 	"net/http"
 	"os"
 	"path"
 	"strconv"
-
-	"github.com/astaxie/beego"
 )
 
 // Operations about MoneyRecordList
@@ -50,13 +49,14 @@ func (mrc *MoneyRecordController) Post() {
 // @Success 200 {object} models.User
 // @router / [get]
 func (mrc *MoneyRecordController) GetAll() {
-	pageIndexStr := mrc.Ctx.Input.Query("pageIndex")
-	pageSizeStr := mrc.Ctx.Input.Query("pageSize")
-	pageIndex, _ := strconv.Atoi(pageIndexStr)
-	pageSize, _ := strconv.Atoi(pageSizeStr)
+	yearStr := mrc.Ctx.Input.Query("year")
+	monthStr := mrc.Ctx.Input.Query("month")
+	year, _ := strconv.Atoi(yearStr)
+	month, _ := strconv.Atoi(monthStr)
 	user := util.GetUser(mrc.Ctx)
 	userId := user.Id
-	moneyRecordList, err := models.GetAllMoneyRecord(pageIndex, pageSize, userId)
+	userId = 1
+	moneyRecordList, err := models.GetAllMoneyRecord(year, month, userId)
 	if err != nil {
 		result := dto.Result{Code: 1, Data: nil, Message: "查询失败"}
 		mrc.Data["json"] = result
