@@ -19,12 +19,14 @@ type ChartController struct {
 func (mrc *ChartController) Get() {
 	yearStr := mrc.Ctx.Input.Query("year")
 	monthStr := mrc.Ctx.Input.Query("month")
+	classificationTypeStr := mrc.Ctx.Input.Query("classificationType")
 	year, _ := strconv.Atoi(yearStr)
 	month, _ := strconv.Atoi(monthStr)
+	classificationType, _ := strconv.Atoi(classificationTypeStr)
 	user := util.GetUser(mrc.Ctx)
 	userId := user.Id
 	userId = 1
-	moneyRecordChartList, err := models.GetAllMoneyRecordChart(year, month, userId)
+	moneyRecordChartList, err := models.GetAllMoneyRecordChart(year, month, classificationType, userId)
 	if err != nil {
 		result := dto.Result{Code: 1, Data: nil, Message: "查询失败"}
 		mrc.Data["json"] = result

@@ -16,7 +16,7 @@ type MoneyRecord struct {
 	Money              float64   `json:"money"`
 	Type               int32     `json:"type"`
 	Remark             string    `json:"remark"`
-	RecordDateTime     time.Time `json:"record_date_time"`
+	RecordDateTime     string    `json:"record_date_time"`
 	PicUrl             string    `json:"pic_url"`
 	DeleteFlag         bool      `json:"delete_flag"`
 	CreateUserId       int64     `json:"create_user_id"`
@@ -89,7 +89,7 @@ func DeleteMoneyRecord(id int64) (num int64, err error) {
 	return 0, errors.New("没有查到要删除的数据")
 }
 
-func GetAllMoneyRecordChart(year int, month int, userId int64) (list []*dto.MoneyRecordChartDto, err error) {
+func GetAllMoneyRecordChart(year int, month int, classificationType int, userId int64) (list []*dto.MoneyRecordChartDto, err error) {
 	o := orm.NewOrm()
 	var mrList []*dto.MoneyRecordChartDto
 	startDate := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.Local)
@@ -98,9 +98,10 @@ func GetAllMoneyRecordChart(year int, month int, userId int64) (list []*dto.Mone
 from money_record
 where record_date_time >= ?
   and record_date_time < ?
+  and type = ?
   and create_user_id = ?
 group by classification_code, classification_name
-order by money desc`, startDate, endDate, userId).QueryRows(&mrList)
+order by money desc`, startDate, endDate, classificationType, userId).QueryRows(&mrList)
 	println(num)
 	return mrList, err
 }
