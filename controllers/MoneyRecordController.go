@@ -55,7 +55,6 @@ func (mrc *MoneyRecordController) GetAll() {
 	month, _ := strconv.Atoi(monthStr)
 	user := util.GetUser(mrc.Ctx)
 	userId := user.Id
-	userId = 1
 	moneyRecordList, err := models.GetAllMoneyRecord(year, month, userId)
 	if err != nil {
 		result := dto.Result{Code: 1, Data: nil, Message: "查询失败"}

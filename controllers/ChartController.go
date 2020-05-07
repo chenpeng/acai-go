@@ -25,7 +25,6 @@ func (mrc *ChartController) Get() {
 	classificationType, _ := strconv.Atoi(classificationTypeStr)
 	user := util.GetUser(mrc.Ctx)
 	userId := user.Id
-	userId = 1
 	moneyRecordChartList, err := models.GetAllMoneyRecordChart(year, month, classificationType, userId)
 	if err != nil {
 		result := dto.Result{Code: 1, Data: nil, Message: "查询失败"}
