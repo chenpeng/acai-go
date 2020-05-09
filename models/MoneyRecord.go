@@ -73,6 +73,11 @@ order by record_date_time desc, id desc`, userId, startDate, endDate).QueryRows(
 func UpdateMoneyRecord(id int64, mr *MoneyRecord) (num int64, err error) {
 	o := orm.NewOrm()
 	mr.UpdateDateTime = time.Now().UTC().Add(8 * time.Hour)
+	record := MoneyRecord{Id: id}
+	o.Read(&record)
+	mr.CreateUserId = record.CreateUserId
+	mr.CreateUserName = record.CreateUserName
+	mr.CreateDateTime = record.CreateDateTime.Add(8 * time.Hour)
 	return o.Update(mr)
 }
 
