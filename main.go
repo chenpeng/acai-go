@@ -1,6 +1,7 @@
 package main
 
 import (
+	"acai-go/filter"
 	_ "acai-go/routers"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
@@ -20,6 +21,6 @@ func main() {
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))
-	//beego.InsertFilter("*", beego.BeforeRouter, filter.OauthFilter)
+	beego.InsertFilter("*", beego.BeforeRouter, filter.OauthFilter)
 	beego.Run()
 }
