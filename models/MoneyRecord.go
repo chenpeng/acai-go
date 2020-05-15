@@ -105,6 +105,7 @@ where record_date_time >= ?
   and record_date_time < ?
   and type = ?
   and create_user_id = ?
+  and delete_flag = 0
 group by classification_code, classification_name
 order by money desc`, startDate, endDate, classificationType, userId).QueryRows(&mrList)
 	println(num)
