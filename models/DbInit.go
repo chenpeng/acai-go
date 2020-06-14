@@ -11,10 +11,8 @@ func init() {
 	orm.RegisterDataBase("default", "mysql", beego.AppConfig.String("datasource"))
 	orm.SetMaxIdleConns("default", 1)
 	orm.SetMaxOpenConns("default", 5)
-	db, err := orm.GetDB("default")
-	if err != nil {
-		db.SetConnMaxLifetime(3595 * time.Second)
-	}
+	db, _ := orm.GetDB("default")
+	db.SetConnMaxLifetime(3595 * time.Second)
 	orm.RegisterModel(new(User))
 	orm.RegisterModel(new(Classification))
 	orm.RegisterModel(new(MoneyRecord))
